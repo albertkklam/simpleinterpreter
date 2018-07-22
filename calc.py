@@ -19,10 +19,7 @@ class Token(object):
             Token(INTEGER, 3)
             Token(PLUS '+')
         """
-        return 'Token({type}, {value})'.format(
-            type=self.type,
-            value=repr(self.value)
-        )
+        return 'Token({type}, {value})'.format(type=self.type, value=repr(self.value))
 
     def __repr__(self):
         return self.__str__()
@@ -51,7 +48,7 @@ class Interpreter(object):
         # is self.pos index past the end of the self.text ?
         # if so, then return EOF token because there is no more
         # input left to convert into tokens
-        if self.pos > len(text) - 1:
+        if self.pos >= len(text):
             return Token(EOF, None)
 
         # get a character at the position self.pos and decide
@@ -63,8 +60,15 @@ class Interpreter(object):
         # index to point to the next character after the digit,
         # and return the INTEGER token
         if current_char.isdigit():
-            token = Token(INTEGER, int(current_char))
-            self.pos += 1
+            digit_string = ""
+            while self.pos < len(text):
+                current_char = text[self.pos]
+                if current_char.isdigit():
+                    digit_string += current_char
+                    self.pos += 1
+                else:
+                    break
+            token = Token(INTEGER, int(digit_string))
             return token
 
         if current_char == '+':
