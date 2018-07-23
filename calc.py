@@ -2,7 +2,7 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, EOF = 'INTEGER', 'PLUS', 'EOF'
+INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
 
 
 class Token(object):
@@ -37,13 +37,16 @@ class Interpreter(object):
     def error(self):
         raise Exception('Error parsing input')
 
+    def remove_whitespace(self, text):
+        return text.replace(" ","")
+
     def get_next_token(self):
         """Lexical analyzer (also known as scanner or tokenizer)
 
         This method is responsible for breaking a sentence
         apart into tokens. One token at a time.
         """
-        text = self.text
+        text = self.remove_whitespace(self.text)
 
         # is self.pos index past the end of the self.text ?
         # if so, then return EOF token because there is no more
@@ -76,6 +79,11 @@ class Interpreter(object):
             self.pos += 1
             return token
 
+        if current_char == '-':
+            token = Token(MINUS, current_char)
+            self.pos += 1
+            return token
+
         self.error()
 
     def eat(self, token_type):
@@ -97,9 +105,12 @@ class Interpreter(object):
         left = self.current_token
         self.eat(INTEGER)
 
-        # we expect the current token to be a '+' token
+        # we expect the current token to be a '+' or '-' token
         op = self.current_token
-        self.eat(PLUS)
+        if op.type == "PLUS":
+            self.eat(PLUS)
+        else:
+            self.eat(MINUS)
 
         # we expect the current token to be a single-digit integer
         right = self.current_token
@@ -111,7 +122,10 @@ class Interpreter(object):
         # has been successfully found and the method can just
         # return the result of adding two integers, thus
         # effectively interpreting client input
-        result = left.value + right.value
+        if op.type == "PLUS":
+            result = left.value + right.value
+        else:
+            result = left.value - right.value
         return result
 
 
