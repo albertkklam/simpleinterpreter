@@ -2,14 +2,12 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, MINUS, EOF = 'INTEGER', 'PLUS', 'MINUS', 'EOF'
+INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EOF'
 
 
 class Token(object):
     def __init__(self, type, value):
-        # token type: INTEGER, PLUS, or EOF
         self.type = type
-        # token value: 0, 1, 2. 3, 4, 5, 6, 7, 8, 9, '+', or None
         self.value = value
 
     def __str__(self):
@@ -76,6 +74,14 @@ class Interpreter(object):
                 self.advance()
                 return Token(MINUS, self.current_char)
 
+            if self.current_char == '*':
+                self.advance()
+                return Token(MULTIPLY, self.current_char)
+
+            if self.current_char == '/':
+                self.advance()
+                return Token(DIVIDE, self.current_char)
+
             self.error()
 
         return Token(EOF, None)
@@ -99,12 +105,16 @@ class Interpreter(object):
         left = self.current_token
         self.eat(INTEGER)
 
-        # we expect the current token to be a '+' or '-' token
+        # we expect the current token to be an operation token
         op = self.current_token
         if op.type == "PLUS":
             self.eat(PLUS)
-        else:
+        elif op.type == "MINUS":
             self.eat(MINUS)
+        elif op.type == "MULTIPLY":
+            self.eat(MULTIPLY)
+        else:
+            self.eat(DIVIDE)
 
         # we expect the current token to be a single-digit integer
         right = self.current_token
@@ -112,14 +122,14 @@ class Interpreter(object):
         # after the above call the self.current_token is set to
         # EOF token
 
-        # at this point INTEGER PLUS INTEGER sequence of tokens
-        # has been successfully found and the method can just
-        # return the result of adding two integers, thus
-        # effectively interpreting client input
         if op.type == "PLUS":
             result = left.value + right.value
-        else:
+        elif op.type == "MINUS":
             result = left.value - right.value
+        elif op.type == "MULTIPLY":
+            result = left.value * right.value
+        else:
+            result = left.value / right.value
         return result
 
 
