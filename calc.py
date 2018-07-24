@@ -27,64 +27,58 @@ class Token(object):
 
 class Interpreter(object):
     def __init__(self, text):
-        # client string input, e.g. "3+5"
         self.text = text
-        # self.pos is an index into self.text
         self.pos = 0
-        # current token instance
         self.current_token = None
+        self.current_char = text[self.pos]
 
     def error(self):
         raise Exception('Error parsing input')
 
-    def remove_whitespace(self, text):
-        return text.replace(" ","")
+    def advance(self):
+        # Advance the 'pos' pointer and set the 'current_char' variable.
+        self.pos += 1
+        if self.pos >= len(self.text):
+            self.current_char = None
+        else:
+            self.current_char = self.text[self.pos]
+
+    def skip_whitespace(self):
+        if self.current_char is not None and self.current_char.isspace():
+            self.advance()
+
+    def integer(self):
+        digit_string = ""
+        while self.current_char is not None and self.current_char.isdigit():
+            digit_string += self.current_char
+            self.advance()
+        return int(digit_string)
 
     def get_next_token(self):
         """Lexical analyzer (also known as scanner or tokenizer)
-
         This method is responsible for breaking a sentence
         apart into tokens. One token at a time.
         """
-        text = self.remove_whitespace(self.text)
+        while self.current_char is not None:
 
-        # is self.pos index past the end of the self.text ?
-        # if so, then return EOF token because there is no more
-        # input left to convert into tokens
-        if self.pos >= len(text):
-            return Token(EOF, None)
+            if self.current_char.isspace():
+                self.skip_whitespace()
+                continue
 
-        # get a character at the position self.pos and decide
-        # what token to create based on the single character
-        current_char = text[self.pos]
+            if self.current_char.isdigit():
+                return Token(INTEGER, self.integer())
 
-        # if the character is a digit then convert it to
-        # integer, create an INTEGER token, increment self.pos
-        # index to point to the next character after the digit,
-        # and return the INTEGER token
-        if current_char.isdigit():
-            digit_string = ""
-            while self.pos < len(text):
-                current_char = text[self.pos]
-                if current_char.isdigit():
-                    digit_string += current_char
-                    self.pos += 1
-                else:
-                    break
-            token = Token(INTEGER, int(digit_string))
-            return token
+            if self.current_char == '+':
+                self.advance()
+                return Token(PLUS, self.current_char)
 
-        if current_char == '+':
-            token = Token(PLUS, current_char)
-            self.pos += 1
-            return token
+            if self.current_char == '-':
+                self.advance()
+                return Token(MINUS, self.current_char)
 
-        if current_char == '-':
-            token = Token(MINUS, current_char)
-            self.pos += 1
-            return token
+            self.error()
 
-        self.error()
+        return Token(EOF, None)
 
     def eat(self, token_type):
         # compare the current token type with the passed token
