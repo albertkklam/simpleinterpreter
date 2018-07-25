@@ -119,7 +119,7 @@ class Interpreter(object):
             elif op.type == "MINUS":
                 result -= integer.value
 
-        if self.current_token.type in ("MULTIPLY", "DIVIDE"):
+        while self.current_token.type in ("MULTIPLY", "DIVIDE"):
             op = self.current_token
             if op.type == "MULTIPLY":
                 self.eat(MULTIPLY)
