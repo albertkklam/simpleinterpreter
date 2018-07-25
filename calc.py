@@ -101,35 +101,39 @@ class Interpreter(object):
         # set current token to the first token taken from the input
         self.current_token = self.get_next_token()
 
-        # we expect the current token to be a single-digit integer
-        left = self.current_token
+        result = self.current_token.value
         self.eat(INTEGER)
 
-        # we expect the current token to be an operation token
-        op = self.current_token
-        if op.type == "PLUS":
-            self.eat(PLUS)
-        elif op.type == "MINUS":
-            self.eat(MINUS)
-        elif op.type == "MULTIPLY":
-            self.eat(MULTIPLY)
-        else:
-            self.eat(DIVIDE)
+        while self.current_token.type in ("PLUS", "MINUS"):
+            op = self.current_token
+            if op.type == "PLUS":
+                self.eat(PLUS)
+            elif op.type == "MINUS":
+                self.eat(MINUS)
 
-        # we expect the current token to be a single-digit integer
-        right = self.current_token
-        self.eat(INTEGER)
-        # after the above call the self.current_token is set to
-        # EOF token
+            integer = self.current_token
+            self.eat(INTEGER)
 
-        if op.type == "PLUS":
-            result = left.value + right.value
-        elif op.type == "MINUS":
-            result = left.value - right.value
-        elif op.type == "MULTIPLY":
-            result = left.value * right.value
-        else:
-            result = left.value / right.value
+            if op.type == "PLUS":
+                result += integer.value
+            elif op.type == "MINUS":
+                result -= integer.value
+
+        if self.current_token.type in ("MULTIPLY", "DIVIDE"):
+            op = self.current_token
+            if op.type == "MULTIPLY":
+                self.eat(MULTIPLY)
+            elif op.type == "DIVIDE":
+                self.eat(DIVIDE)
+
+            integer = self.current_token
+            self.eat(INTEGER)
+
+            if op.type == "MULTIPLY":
+                result *= integer.value
+            elif op.type == "DIVIDE":
+                result /= integer.value
+
         return result
 
 
