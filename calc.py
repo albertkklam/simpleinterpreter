@@ -66,21 +66,21 @@ class Interpreter:
             if self.current_char.isdigit():
                 return Token(INTEGER, self.integer())
 
-            if self.current_char == '+':
+            if self.current_char == "+":
                 self.advance()
-                return Token(PLUS, self.current_char)
+                return Token(PLUS, "+")
 
-            if self.current_char == '-':
+            if self.current_char == "-":
                 self.advance()
-                return Token(MINUS, self.current_char)
+                return Token(MINUS, "-")
 
-            if self.current_char == '*':
+            if self.current_char == "*":
                 self.advance()
-                return Token(MULTIPLY, self.current_char)
+                return Token(MULTIPLY, "*")
 
-            if self.current_char == '/':
+            if self.current_char == "/":
                 self.advance()
-                return Token(DIVIDE, self.current_char)
+                return Token(DIVIDE, "/")
 
             self.error()
 
