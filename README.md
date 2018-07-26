@@ -2,9 +2,12 @@
 
 > "If you don’t know how compilers work, then you don’t know how computers work." -- Steve Yegge
 
-Let’s build a simple interpreter! This respository is based off the [Let's Build A Simple Interpreter](https://ruslanspivak.com/lsbasi-part1/) series by Ruslan Spivak. 
+This respository is based off the [Let's Build A Simple Interpreter](https://ruslanspivak.com/lsbasi-part1/) series by [Ruslan Spivak](https://github.com/rspivak). 
+
+## Changelog
 
 Follow along on what's happening:
+
 - [x] Modify the code to allow multiple-digit integers in the input, for example “12+3”
 - [x] Add a method that skips whitespace characters so that your calculator can handle inputs with whitespace characters like ” 12 + 3”
 - [x] Modify the code and instead of ‘+’ handle ‘-‘ to evaluate subtractions like “7-5”

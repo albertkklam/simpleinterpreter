@@ -5,7 +5,7 @@
 INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EOF'
 
 
-class Token(object):
+class Token:
     def __init__(self, type, value):
         self.type = type
         self.value = value
@@ -23,7 +23,7 @@ class Token(object):
         return self.__str__()
 
 
-class Interpreter(object):
+class Interpreter:
     def __init__(self, text):
         self.text = text
         self.pos = 0
