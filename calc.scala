@@ -6,9 +6,7 @@ val (integer, plus, minus, eof) = ("INTEGER", "PLUS", "MINUS", "EOF")
 case class Token(tokenType: String,
                  tokenValue: String) {
 
-  override def toString: String = {
-    s"Token($tokenType, $tokenValue)"
-  }
+  override def toString: String = s"Token($tokenType, $tokenValue)"
 
 }
 
@@ -43,25 +41,18 @@ class Interpreter(val text: String) {
   }
 
   def lexer(): Token = {
-    while (current_char != "") {
-      if (Try(current_char.toInt).isSuccess) {
-        Token(integer, makeInteger())
-      }
-
-      else if (Try(current_char == "+").isSuccess) {
-        advance()
-        Token(plus, "+")
-      }
-
-      else if (Try(current_char == "-").isSuccess) {
-        advance()
-        Token(minus, "-")
-      }
-
-      else error()
-
+    if (Try(current_char.toInt).isSuccess) {
+      Token(integer, makeInteger())
     }
-    Token(eof, "")
+    else if (current_char == "+") {
+      advance()
+      Token(plus, "+")
+    }
+    else if (current_char == "-") {
+      advance()
+      Token(minus, "-")
+    }
+    else Token(eof, "")
   }
 
   def eat(token_type: String): Unit = {
@@ -72,27 +63,22 @@ class Interpreter(val text: String) {
   }
 
   def parser(): Int = {
-    eat("INTEGER")
-    while (current_token.tokenType == "PLUS" || current_token.tokenType == "MINUS") {
+    eat(integer)
+    while (current_token.tokenType == plus | current_token.tokenType == minus) {
+      val opToken = current_token
 
-      val op = current_token
-      if (op.tokenType == "PLUS") {
-        eat("PLUS")
-      }
-      else if (op.tokenType == "MINUS") {
-        eat("MINUS")
-      }
+      if (opToken.tokenType == plus) eat(plus)
+      else eat(minus)
 
       val integerToken = current_token
-      eat("INTEGER")
+      eat(integer)
 
-      if (op.tokenType == "PLUS") {
+      if (opToken.tokenType == plus) {
         result += integerToken.tokenValue.toInt
       }
-      else if (op.tokenType == "MINUS") {
+      else {
         result -= integerToken.tokenValue.toInt
       }
-
     }
     result
   }
