@@ -2,7 +2,7 @@
 #
 # EOF (end-of-file) token is used to indicate that
 # there is no more input left for lexical analysis
-INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, EOF = 'INTEGER', 'PLUS', 'MINUS', 'MULTIPLY', 'DIVIDE', 'EOF'
+INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, EOF = "INTEGER", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "EOF"
 
 
 class Token:
@@ -17,7 +17,7 @@ class Token:
             Token(INTEGER, 3)
             Token(PLUS '+')
         """
-        return 'Token({type}, {value})'.format(type=self.type, value=repr(self.value))
+        return "Token({type}, {value})".format(type=self.type, value=repr(self.value))
 
     def __repr__(self):
         return self.__str__()
@@ -31,7 +31,7 @@ class Interpreter:
         self.current_char = text[self.pos]
 
     def error(self):
-        raise Exception('Error parsing input')
+        raise Exception("Error parsing input")
 
     def advance(self):
         # Advance the 'pos' pointer and set the 'current_char' variable.
@@ -100,10 +100,8 @@ class Interpreter:
         """expr -> INTEGER PLUS INTEGER"""
         # set current token to the first token taken from the input
         self.current_token = self.get_next_token()
-
         result = self.current_token.value
         self.eat(INTEGER)
-
         while self.current_token.type in ("PLUS", "MINUS"):
             op = self.current_token
             if op.type == "PLUS":
@@ -140,7 +138,7 @@ class Interpreter:
 def main():
     while True:
         try:
-            text = input('calc> ')
+            text = input("calc> ")
         except EOFError:
             break
         if not text:
@@ -150,5 +148,5 @@ def main():
         print(result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

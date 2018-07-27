@@ -1,10 +1,10 @@
 import scala.util.Try
 import scala.collection.mutable.StringBuilder
 
-val (integer, plus, minus, eof) = ("INTEGER", "PLUS", "MINUS", "eof")
+val (integer, plus, minus, eof) = ("INTEGER", "PLUS", "MINUS", "EOF")
 
 case class Token(tokenType: String,
-                 tokenValue: Option[Any]) {
+                 tokenValue: String) {
 
   override def toString: String = {
     s"Token($tokenType, $tokenValue)"
@@ -15,8 +15,13 @@ case class Token(tokenType: String,
 class Interpreter(val text: String) {
 
   var pos = 0
-  val current_token: Option[Token] = None
   var current_char = text(pos).toString
+  var current_token: Token = Token(integer, makeInteger())
+  var result = current_token.tokenValue.toInt
+
+  def error(): Unit = {
+    throw new Exception("Error parsing input")
+  }
 
   def advance(): Unit = {
     pos += 1
@@ -28,29 +33,68 @@ class Interpreter(val text: String) {
     }
   }
 
-  def makeInteger(): Int = {
+  def makeInteger(): String = {
     val digit_string = new StringBuilder
     while (current_char != "" && Try(current_char.toInt).isSuccess) {
       digit_string.append(current_char)
       advance()
     }
-    digit_string.toInt
+    digit_string.toString
   }
 
-  def lexer: Token = {
+  def lexer(): Token = {
+    while (current_char != "") {
+      if (Try(current_char.toInt).isSuccess) {
+        Token(integer, makeInteger())
+      }
 
-    if (Try(current_char.toInt).isSuccess) {
-      Token(integer, Some(makeInteger()))
+      else if (Try(current_char == "+").isSuccess) {
+        advance()
+        Token(plus, "+")
+      }
+
+      else if (Try(current_char == "-").isSuccess) {
+        advance()
+        Token(minus, "-")
+      }
+
+      else error()
+
     }
-    else if (Try(current_char == "+").isSuccess) {
-      advance()
-      Token(plus, Some("+"))
+    Token(eof, "")
+  }
+
+  def eat(token_type: String): Unit = {
+    if (current_token.tokenType == token_type) {
+      current_token == lexer()
     }
-    else if (Try(current_char == "-").isSuccess) {
-      advance()
-      Token(minus, Some("-"))
+    else error()
+  }
+
+  def parser(): Int = {
+    eat("INTEGER")
+    while (current_token.tokenType == "PLUS" || current_token.tokenType == "MINUS") {
+
+      val op = current_token
+      if (op.tokenType == "PLUS") {
+        eat("PLUS")
+      }
+      else if (op.tokenType == "MINUS") {
+        eat("MINUS")
+      }
+
+      val integerToken = current_token
+      eat("INTEGER")
+
+      if (op.tokenType == "PLUS") {
+        result += integerToken.tokenValue.toInt
+      }
+      else if (op.tokenType == "MINUS") {
+        result -= integerToken.tokenValue.toInt
+      }
+
     }
-    else Token(eof, None)
+    result
   }
 
 }
