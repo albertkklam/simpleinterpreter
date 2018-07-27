@@ -66,7 +66,7 @@ class Interpreter(val text: String) {
 
   def eat(token_type: String): Unit = {
     if (current_token.tokenType == token_type) {
-      current_token == lexer()
+      current_token = lexer()
     }
     else error()
   }
