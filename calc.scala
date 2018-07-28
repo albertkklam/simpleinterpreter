@@ -1,7 +1,7 @@
 import scala.util.Try
 import scala.collection.mutable.StringBuilder
 
-val (integer, plus, minus, eof) = ("INTEGER", "PLUS", "MINUS", "EOF")
+val (integer, plus, minus, space, eof) = ("INTEGER", "PLUS", "MINUS", "SPACE", "EOF")
 
 case class Token(tokenType: String,
                  tokenValue: String) {
@@ -52,12 +52,19 @@ class Interpreter(val text: String) {
       advance()
       Token(minus, "-")
     }
+    else if (current_char == " ") {
+      advance()
+      Token(space, " ")
+    }
     else Token(eof, "")
   }
 
   def eat(token_type: String): Unit = {
     if (current_token.tokenType == token_type) {
       current_token = lexer()
+      while(current_token.tokenType == space) {
+        eat(space)
+      }
     }
     else error()
   }
