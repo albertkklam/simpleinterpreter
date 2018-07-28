@@ -23,15 +23,14 @@ class Token:
         return self.__str__()
 
 
-class Interpreter:
+class Lexer(object):
     def __init__(self, text):
         self.text = text
         self.pos = 0
-        self.current_token = None
         self.current_char = text[self.pos]
 
     def error(self):
-        raise Exception("Error parsing input")
+        raise Exception("Invalid character")
 
     def advance(self):
         # Advance the 'pos' pointer and set the 'current_char' variable.
@@ -86,20 +85,26 @@ class Interpreter:
 
         return Token(EOF, None)
 
+
+class Interpreter(object):
+    def __init__(self, lexer):
+        self.lexer = lexer
+        self.current_token = self.lexer.get_next_token()
+
+    def error(self):
+        raise Exception("Invalid syntax")
+
     def eat(self, token_type):
         # compare the current token type with the passed token
         # type and if they match then "eat" the current token
         # and assign the next token to the self.current_token,
         # otherwise raise an exception.
         if self.current_token.type == token_type:
-            self.current_token = self.get_next_token()
+            self.current_token = self.lexer.get_next_token()
         else:
             self.error()
 
     def expr(self):
-        """expr -> INTEGER PLUS INTEGER"""
-        # set current token to the first token taken from the input
-        self.current_token = self.get_next_token()
         result = self.current_token.value
         self.eat(INTEGER)
         while self.current_token.type in ("PLUS", "MINUS"):
@@ -143,7 +148,8 @@ def main():
             break
         if not text:
             continue
-        interpreter = Interpreter(text)
+        lexer = Lexer(text)
+        interpreter = Interpreter(lexer)
         result = interpreter.expr()
         print(result)
 
