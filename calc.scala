@@ -7,13 +7,13 @@ case class Token(tokenType: String,
                  tokenValue: String) {
 
   override def toString: String = s"Token($tokenType, $tokenValue)"
-
 }
 
 class Interpreter(val text: String) {
 
   var pos = 0
   var current_char = text(pos).toString
+  while (current_char == " ") advance()
   var current_token: Token = Token(integer, makeInteger())
   var result = current_token.tokenValue.toInt
 
@@ -89,5 +89,4 @@ class Interpreter(val text: String) {
     }
     result
   }
-
 }
