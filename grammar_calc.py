@@ -1,7 +1,3 @@
-# Token types
-#
-# EOF (end-of-file) token is used to indicate that
-# there is no more input left for lexical analysis
 INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, EOF = "INTEGER", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "EOF"
 
 
@@ -85,7 +81,6 @@ class Lexer(object):
 
         return Token(EOF, None)
 
-
 class Interpreter(object):
     def __init__(self, lexer):
         self.lexer = lexer
@@ -104,39 +99,33 @@ class Interpreter(object):
         else:
             self.error()
 
-    def expr(self):
-        result = self.current_token.value
+    def factor(self):
+        token = self.current_token
         self.eat(INTEGER)
-        while self.current_token.type in (PLUS, MINUS):
-            op = self.current_token
-            if op.type == PLUS:
-                self.eat(PLUS)
-            elif op.type == MINUS:
-                self.eat(MINUS)
+        return token.value
 
-            integer = self.current_token
-            self.eat(INTEGER)
-
-            if op.type == PLUS:
-                result += integer.value
-            elif op.type == MINUS:
-                result -= integer.value
-
+    def term(self):
+        result = self.factor()
         while self.current_token.type in (MULTIPLY, DIVIDE):
-            op = self.current_token
-            if op.type == MULTIPLY:
+            token = self.current_token
+            if token.type == MULTIPLY:
                 self.eat(MULTIPLY)
-            elif op.type == DIVIDE:
+                result *= self.factor()
+            elif token.type == DIVIDE:
                 self.eat(DIVIDE)
+                result /= self.factor()
+        return result
 
-            integer = self.current_token
-            self.eat(INTEGER)
-
-            if op.type == MULTIPLY:
-                result *= integer.value
-            elif op.type == DIVIDE:
-                result /= integer.value
-
+    def expr(self):
+        result = self.term()
+        while self.current_token.type in (PLUS, MINUS):
+            token = self.current_token
+            if token.type == PLUS:
+                self.eat(PLUS)
+                result += self.term()
+            elif token.type == MINUS:
+                self.eat(MINUS)
+                result -= self.term()
         return result
 
 
