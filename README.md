@@ -27,3 +27,6 @@ Follow along on what's happening:
 
 ### Part 5
 - [x] Extend the interpreter to handle arithmetic expressions containing parentheses so that your interpreter could evaluate deeply nested arithmetic expressions like: 7 + 3 * (10 / (12 / (3 + 1) - 1))
+
+### Part 6
+- [ ] Write your own version of the interpreter of arithmetic expressions as described in this article
