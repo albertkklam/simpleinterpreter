@@ -1,7 +1,3 @@
-# Token types
-#
-# EOF (end-of-file) token is used to indicate that
-# there is no more input left for lexical analysis
 INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, EOF = "INTEGER", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "EOF"
 
 
@@ -11,12 +7,6 @@ class Token:
         self.value = value
 
     def __str__(self):
-        """String representation of the class instance.
-
-        Examples:
-            Token(INTEGER, 3)
-            Token(PLUS '+')
-        """
         return "Token({type}, {value})".format(type=self.type, value=repr(self.value))
 
     def __repr__(self):
@@ -33,7 +23,6 @@ class Lexer(object):
         raise Exception("Invalid character")
 
     def advance(self):
-        # Advance the 'pos' pointer and set the 'current_char' variable.
         self.pos += 1
         if self.pos >= len(self.text):
             self.current_char = None
