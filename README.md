@@ -30,3 +30,6 @@ Follow along on what's happening:
 
 ### Part 6
 - [x] Write your own version of the interpreter of arithmetic expressions as described in this article
+
+### Part 7
+- [ ] Write a translator (hint: node visitor) that takes as input an arithmetic expression and prints it out in postfix notation, also known as Reverse Polish Notation (RPN). For example, if the input to the translator is the expression (5 + 3) * 12 / 3 than the output should be 5 3 + 12 * 3 /. See the answer here but try to solve it first on your own
