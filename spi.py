@@ -8,12 +8,6 @@ class Token(object):
         self.value = value
 
     def __str__(self):
-        """String representation of the class instance.
-
-        Examples:
-            Token(INTEGER, 3)
-            Token(PLUS '+')
-        """
         return "Token({type}, {value})".format(type=self.type, value=repr(self.value))
 
     def __repr__(self):
@@ -48,10 +42,6 @@ class Lexer(object):
         return int(digit_string)
 
     def get_next_token(self):
-        """Lexical analyzer (also known as scanner or tokenizer)
-        This method is responsible for breaking a sentence
-        apart into tokens. One token at a time.
-        """
         while self.current_char is not None:
 
             if self.current_char.isspace():
