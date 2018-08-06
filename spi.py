@@ -125,9 +125,9 @@ class AST(object):
 
 
 class UnaryOp(AST):
-    def __init__(self, op, factor):
+    def __init__(self, op, expr):
         self.token = self.op = op
-        self.factor = factor
+        self.expr = expr
 
 
 class BinOp(AST):
@@ -144,7 +144,6 @@ class Num(AST):
 
 
 class Compound(AST):
-    """Represents a 'BEGIN ... END' block"""
     def __init__(self):
         self.children = []
 
@@ -184,10 +183,12 @@ class Parser(object):
         token = self.current_token
         if token.type == PLUS:
             self.eat(PLUS)
-            return UnaryOp(token, self.factor())
+            node = UnaryOp(token, self.factor())
+            return node
         elif token.type == MINUS:
             self.eat(MINUS)
-            return UnaryOp(token, self.factor())
+            node = UnaryOp(token, self.factor())
+            return node
         elif token.type == INTEGER:
             self.eat(INTEGER)
             return Num(token)
@@ -289,6 +290,9 @@ class NodeVisitor(object):
 
 
 class Interpreter(NodeVisitor):
+
+    GLOBAL_SCOPE = {}
+
     def __init__(self, parser):
         self.parser = parser
 
@@ -312,15 +316,36 @@ class Interpreter(NodeVisitor):
     def visit_Num(self, node):
         return node.value
 
+    def visit_Compound(self, node):
+        for child in node.children:
+            self.visit(child)
+
+    def visit_Assign(self, node):
+        var_name = node.left.value
+        self.GLOBAL_SCOPE[var_name] = self.visit(node.right)
+
+    def visit_Var(self, node):
+        var_name = node.value
+        val = self.GLOBAL_SCOPE.get(var_name)
+        if val is None:
+            raise NameError(repr(var_name))
+        else:
+            return val
+
+    def visit_NoOp(self, node):
+        pass
+
     def interpret(self):
         tree = self.parser.parse()
+        if tree is None:
+            return ''
         return self.visit(tree)
 
 
 def main():
     while True:
         try:
-            text = input('spi> ')
+            text = input("spi> ")
         except EOFError:
             break
         if not text:
@@ -329,9 +354,10 @@ def main():
         lexer = Lexer(text)
         parser = Parser(lexer)
         interpreter = Interpreter(parser)
-        result = interpreter.interpret()
-        print(result)
+        interpreter.interpret()
+        print(interpreter.GLOBAL_SCOPE)
 
 
 if __name__ == '__main__':
     main()
+
