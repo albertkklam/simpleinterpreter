@@ -1,5 +1,7 @@
-INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, LPAREN, RPAREN, EOF = \
-    "INTEGER", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "LPAREN", "RPAREN", "EOF"
+INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, LPAREN, RPAREN,\
+ID, ASSIGN, BEGIN, END, SEMI, DOT, EOF = \
+    "INTEGER", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "LPAREN", "RPAREN",\
+    "ID", "ASSIGN", "BEGIN", "END", "SEMI", "DOT", "EOF"
 
 
 class Token(object):
@@ -14,6 +16,12 @@ class Token(object):
         return self.__str__()
 
 
+RESERVED_KEYWORDS = {
+    'BEGIN': Token('BEGIN', 'BEGIN'),
+    'END': Token('END', 'END'),
+}
+
+
 class Lexer(object):
     def __init__(self, text):
         self.text = text
@@ -22,6 +30,13 @@ class Lexer(object):
 
     def error(self):
         raise Exception("Invalid character")
+
+    def peek(self):
+        peek_pos = self.pos + 1
+        if peek_pos > len(self.text) - 1:
+            return None
+        else:
+            return self.text[peek_pos]
 
     def advance(self):
         self.pos += 1
@@ -41,6 +56,15 @@ class Lexer(object):
             self.advance()
         return int(digit_string)
 
+    def _id(self):
+        result = ''
+        while self.current_char is not None and self.current_char.isalnum():
+            result += self.current_char
+            self.advance()
+
+        token = RESERVED_KEYWORDS.get(result, Token(ID, result))
+        return token
+
     def get_next_token(self):
         while self.current_char is not None:
 
@@ -48,8 +72,24 @@ class Lexer(object):
                 self.skip_whitespace()
                 continue
 
+            if self.current_char.isalpha():
+                return self._id()
+
             if self.current_char.isdigit():
                 return Token(INTEGER, self.integer())
+
+            if self.current_char == ':' and self.peek() == '=':
+                self.advance()
+                self.advance()
+                return Token(ASSIGN, ':=')
+
+            if self.current_char == ';':
+                self.advance()
+                return Token(SEMI, ';')
+
+            if self.current_char == '.':
+                self.advance()
+                return Token(DOT, '.')
 
             if self.current_char == "+":
                 self.advance()
