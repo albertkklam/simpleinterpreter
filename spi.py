@@ -1,6 +1,6 @@
-INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, LPAREN, RPAREN,\
+INTEGER, PLUS, MINUS, MULTIPLY, DIVIDE, DIV, LPAREN, RPAREN,\
 ID, ASSIGN, BEGIN, END, SEMI, DOT, EOF = \
-    "INTEGER", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "LPAREN", "RPAREN",\
+    "INTEGER", "PLUS", "MINUS", "MULTIPLY", "DIVIDE", "DIV", "LPAREN", "RPAREN",\
     "ID", "ASSIGN", "BEGIN", "END", "SEMI", "DOT", "EOF"
 
 
@@ -17,8 +17,9 @@ class Token(object):
 
 
 RESERVED_KEYWORDS = {
-    "BEGIN": Token("BEGIN", "BEGIN"),
-    "END": Token("END", "END"),
+    "BEGIN": Token(BEGIN, "BEGIN"),
+    "END": Token(END, "END"),
+    "DIV": Token(DIV, "//")
 }
 
 
@@ -104,8 +105,13 @@ class Lexer(object):
                 return Token(MULTIPLY, "*")
 
             if self.current_char == "/":
-                self.advance()
-                return Token(DIVIDE, "/")
+                if self.peek() == "/":
+                    self.advance()
+                    self.advance()
+                    return Token(DIV, "//")
+                else:
+                    self.advance()
+                    return Token(DIVIDE, "/")
 
             if self.current_char == "(":
                 self.advance()
@@ -203,12 +209,14 @@ class Parser(object):
 
     def term(self):
         node = self.factor()
-        while self.current_token.type in (MULTIPLY, DIVIDE):
+        while self.current_token.type in (MULTIPLY, DIVIDE, DIV):
             token = self.current_token
             if token.type == MULTIPLY:
                 self.eat(MULTIPLY)
             elif token.type == DIVIDE:
                 self.eat(DIVIDE)
+            elif token.type == DIV:
+                self.eat(DIV)
             node = BinOp(left=node, op=token, right=self.factor())
         return node
 
@@ -312,6 +320,8 @@ class Interpreter(NodeVisitor):
             return self.visit(node.left) * self.visit(node.right)
         elif node.op.type == DIVIDE:
             return self.visit(node.left) / self.visit(node.right)
+        elif node.op.type == DIV:
+            return self.visit(node.left) // self.visit(node.right)
 
     def visit_Num(self, node):
         return node.value
