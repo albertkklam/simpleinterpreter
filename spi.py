@@ -58,7 +58,11 @@ class Lexer(object):
         return int(digit_string)
 
     def _id(self):
-        result = ""
+        if self.current_char == "_":
+            result = "_"
+            self.advance()
+        else:
+            result = ""
         while self.current_char is not None and self.current_char.isalnum():
             result += self.current_char
             self.advance()
@@ -73,7 +77,7 @@ class Lexer(object):
                 self.skip_whitespace()
                 continue
 
-            if self.current_char.isalpha():
+            if self.current_char.isalpha() or self.current_char == "_":
                 return self._id()
 
             if self.current_char.isdigit():

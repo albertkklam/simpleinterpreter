@@ -38,4 +38,4 @@ Follow along on what's happening:
 ### Part 9
 - [x] Pascal variables and reserved keywords are case insensitive, unlike in many other programming languages, so BEGIN, begin, and BeGin they all refer to the same reserved keyword. Update the interpreter so that variables and reserved keywords are case insensitive
 - [x] I mentioned in the “hacks” section before that our interpreter is using the forward slash character ‘/’ to denote integer division, but instead it should be using Pascal’s reserved keyword div for integer division. Update the interpreter to use the div keyword for integer division, thus eliminating one of the hacks
-- [ ] Update the interpreter so that variables could also start with an underscore as in ‘_num := 5’
+- [x] Update the interpreter so that variables could also start with an underscore as in ‘_num := 5’
