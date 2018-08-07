@@ -17,8 +17,8 @@ class Token(object):
 
 
 RESERVED_KEYWORDS = {
-    'BEGIN': Token('BEGIN', 'BEGIN'),
-    'END': Token('END', 'END'),
+    "BEGIN": Token("BEGIN", "BEGIN"),
+    "END": Token("END", "END"),
 }
 
 
@@ -57,12 +57,12 @@ class Lexer(object):
         return int(digit_string)
 
     def _id(self):
-        result = ''
+        result = ""
         while self.current_char is not None and self.current_char.isalnum():
             result += self.current_char
             self.advance()
 
-        token = RESERVED_KEYWORDS.get(result, Token(ID, result))
+        token = RESERVED_KEYWORDS.get(result.upper(), Token(ID, result.lower()))
         return token
 
     def get_next_token(self):
@@ -78,18 +78,18 @@ class Lexer(object):
             if self.current_char.isdigit():
                 return Token(INTEGER, self.integer())
 
-            if self.current_char == ':' and self.peek() == '=':
+            if self.current_char == ":" and self.peek() == "=":
                 self.advance()
                 self.advance()
-                return Token(ASSIGN, ':=')
+                return Token(ASSIGN, ":=")
 
-            if self.current_char == ';':
+            if self.current_char == ";":
                 self.advance()
-                return Token(SEMI, ';')
+                return Token(SEMI, ";")
 
-            if self.current_char == '.':
+            if self.current_char == ".":
                 self.advance()
-                return Token(DOT, '.')
+                return Token(DOT, ".")
 
             if self.current_char == "+":
                 self.advance()
