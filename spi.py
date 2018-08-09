@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 INTEGER_CONST, REAL_CONST, PLUS, MINUS, MULTIPLY, FLOAT_DIV, INTEGER_DIV, LPAREN, RPAREN,\
     PROGRAM, VAR, COLON, COMMA, INTEGER, REAL, ID, ASSIGN, BEGIN, END, SEMI, DOT, EOF = \
     "INTEGER_CONST", "REAL_CONST", "PLUS", "MINUS", "MULTIPLY", "FLOAT_DIV", "INTEGER_DIV", "LPAREN", "RPAREN",\
@@ -188,6 +190,12 @@ class VarDecl(AST):
         self.type_node = type_node
 
 
+class Var(AST):
+    def __init__(self, token):
+        self.token = token
+        self.value = token.value
+
+
 class Type(AST):
     def __init__(self, token):
         self.token = token
@@ -223,12 +231,6 @@ class Assign(AST):
         self.left = left
         self.token = self.op = op
         self.right = right
-
-
-class Var(AST):
-    def __init__(self, token):
-        self.token = token
-        self.value = token.value
 
 
 class NoOp(AST):
@@ -333,10 +335,7 @@ class Parser(object):
             self.eat(ID)
         self.eat(COLON)
         type_node = self.type_spec()
-        var_declarations = [
-            VarDecl(var_node, type_node)
-            for var_node in var_nodes
-        ]
+        var_declarations = [VarDecl(var_node, type_node) for var_node in var_nodes]
         return var_declarations
 
     def type_spec(self):
@@ -401,20 +400,120 @@ class Parser(object):
 
 class NodeVisitor(object):
     def visit(self, node):
-        method_name = 'visit_' + type(node).__name__
+        method_name = "visit_" + type(node).__name__
         visitor = getattr(self, method_name, self.generic_visit)
         return visitor(node)
 
     def generic_visit(self, node):
-        raise Exception('No visit_{} method'.format(type(node).__name__))
+        raise Exception("No visit_{} method".format(type(node).__name__))
+
+
+class Symbol(object):
+    def __init__(self, name, type=None):
+        self.name = name
+        self.type = type
+
+
+class BuiltinTypeSymbol(Symbol):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def __str__(self):
+        return self.name
+
+    __repr__ = __str__
+
+
+class VarSymbol(Symbol):
+    def __init__(self, name, type):
+        super().__init__(name, type)
+
+    def __str__(self):
+        return "<{name}:{type}>".format(name=self.name, type=self.type)
+
+    __repr__ = __str__
+
+
+class SymbolTable(object):
+    def __init__(self):
+        self._symbols = OrderedDict()
+        self._init_builtins()
+
+    def _init_builtins(self):
+        self.define(BuiltinTypeSymbol("INTEGER"))
+        self.define(BuiltinTypeSymbol("REAL"))
+
+    def __str__(self):
+        s = "Symbols: {symbols}".format(symbols=[value for value in self._symbols.values()])
+        return s
+
+    __repr__ = __str__
+
+    def define(self, symbol):
+        print("Define: %s" % symbol)
+        self._symbols[symbol.name] = symbol
+
+    def lookup(self, name):
+        print("Lookup: %s" % name)
+        symbol = self._symbols.get(name)
+        return symbol
+
+
+class SymbolTableBuilder(NodeVisitor):
+    def __init__(self):
+        self.symtab = SymbolTable()
+
+    def visit_Program(self, node):
+        self.visit(node.block)
+
+    def visit_Block(self, node):
+        for declaration in node.declarations:
+            self.visit(declaration)
+        self.visit(node.compound_statement)
+
+    def visit_VarDecl(self, node):
+        type_name = node.type_node.value
+        type_symbol = self.symtab.lookup(type_name)
+        var_name = node.var_node.value
+        var_symbol = VarSymbol(var_name, type_symbol)
+        self.symtab.define(var_symbol)
+
+    def visit_UnaryOp(self, node):
+        self.visit(node.expr)
+
+    def visit_BinOp(self, node):
+        self.visit(node.left)
+        self.visit(node.right)
+
+    def visit_Num(self, node):
+        pass
+
+    def visit_Compound(self, node):
+        for child in node.children:
+            self.visit(child)
+
+    def visit_Assign(self, node):
+        var_name = node.left.value
+        var_symbol = self.symtab.lookup(var_name)
+        if var_symbol is None:
+            raise NameError(repr(var_name))
+        self.visit(node.right)
+
+    def visit_Var(self, node):
+        var_name = node.value
+        var_symbol = self.symtab.lookup(var_name)
+        if var_symbol is None:
+            raise NameError(repr(var_name))
+
+    def visit_NoOp(self, node):
+        pass
 
 
 class Interpreter(NodeVisitor):
 
-    GLOBAL_SCOPE = {}
-
-    def __init__(self, parser):
-        self.parser = parser
+    def __init__(self, tree):
+        self.tree = tree
+        self.GLOBAL_MEMORY = OrderedDict()
 
     def visit_Program(self, node):
         self.visit(node.block)
@@ -458,23 +557,23 @@ class Interpreter(NodeVisitor):
 
     def visit_Assign(self, node):
         var_name = node.left.value
-        self.GLOBAL_SCOPE[var_name] = self.visit(node.right)
+        self.GLOBAL_MEMORY[var_name] = self.visit(node.right)
 
     def visit_Var(self, node):
         var_name = node.value
-        val = self.GLOBAL_SCOPE.get(var_name)
-        if val is None:
+        var_value = self.GLOBAL_MEMORY.get(var_name)
+        if var_value is None:
             raise NameError(repr(var_name))
         else:
-            return val
+            return var_value
 
     def visit_NoOp(self, node):
         pass
 
     def interpret(self):
-        tree = self.parser.parse()
+        tree = self.tree
         if tree is None:
-            return ''
+            return ""
         return self.visit(tree)
 
 
@@ -489,9 +588,17 @@ def main():
 
         lexer = Lexer(text)
         parser = Parser(lexer)
-        interpreter = Interpreter(parser)
+        tree = parser.parse()
+        symtab_builder = SymbolTableBuilder()
+        symtab_builder.visit(tree)
+        print('Symbol Table contents:')
+        print(symtab_builder.symtab)
+
+        interpreter = Interpreter(tree)
         interpreter.interpret()
-        print(interpreter.GLOBAL_SCOPE)
+        print('Run-time GLOBAL_MEMORY contents:')
+        for k, v in sorted(interpreter.GLOBAL_MEMORY.items()):
+            print('%s = %s' % (k, v))
 
 
 if __name__ == '__main__':
