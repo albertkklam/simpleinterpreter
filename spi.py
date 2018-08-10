@@ -1,9 +1,11 @@
 from collections import OrderedDict
 
 INTEGER_CONST, REAL_CONST, PLUS, MINUS, MULTIPLY, FLOAT_DIV, INTEGER_DIV, LPAREN, RPAREN,\
-    PROGRAM, VAR, COLON, COMMA, INTEGER, REAL, ID, ASSIGN, BEGIN, END, SEMI, DOT, EOF = \
+    PROGRAM, VAR, COLON, COMMA, PROCEDURE, INTEGER, REAL, ID, ASSIGN,\
+    BEGIN, END, SEMI, DOT, EOF = \
     "INTEGER_CONST", "REAL_CONST", "PLUS", "MINUS", "MULTIPLY", "FLOAT_DIV", "INTEGER_DIV", "LPAREN", "RPAREN",\
-    "PROGRAM", "VAR", "COLON", "COMMA", "INTEGER", "REAL", "ID", "ASSIGN", "BEGIN", "END", "SEMI", "DOT", "EOF"
+    "PROGRAM", "VAR", "COLON", "COMMA", "PROCEDURE", "INTEGER", "REAL", "ID", "ASSIGN",\
+    "BEGIN", "END", "SEMI", "DOT", "EOF"
 
 
 class Token(object):
@@ -20,6 +22,7 @@ class Token(object):
 
 RESERVED_KEYWORDS = {
     "PROGRAM": Token(PROGRAM, "PROGRAM"),
+    "PROCEDURE": Token("PROCEDURE", "PROCEDURE"),
     "VAR": Token(VAR, "VAR"),
     "INTEGER": Token(INTEGER, "INTEGER"),
     "REAL": Token(REAL, "REAL"),
@@ -190,6 +193,12 @@ class VarDecl(AST):
         self.type_node = type_node
 
 
+class ProcedureDecl(AST):
+    def __init__(self, proc_name, block_node):
+        self.proc_name = proc_name
+        self.block_node = block_node
+
+
 class Var(AST):
     def __init__(self, token):
         self.token = token
@@ -316,6 +325,7 @@ class Parser(object):
         node = Block(declaration_nodes, compound_statement_node)
         return node
 
+
     def declarations(self):
         declarations = []
         if self.current_token.type == VAR:
@@ -324,7 +334,17 @@ class Parser(object):
                 var_decl = self.variable_declaration()
                 declarations.extend(var_decl)
                 self.eat(SEMI)
+        while self.current_token.type == PROCEDURE:
+            self.eat(PROCEDURE)
+            proc_name = self.current_token.value
+            self.eat(ID)
+            self.eat(SEMI)
+            block_node = self.block()
+            self.eat(SEMI)
+            proc_decl = ProcedureDecl(proc_name, block_node)
+            declarations.append(proc_decl)
         return declarations
+
 
     def variable_declaration(self):
         var_nodes = [Var(self.current_token)]
@@ -478,6 +498,9 @@ class SymbolTableBuilder(NodeVisitor):
         var_symbol = VarSymbol(var_name, type_symbol)
         self.symtab.define(var_symbol)
 
+    def visit_ProcedureDecl(self, node):
+        pass
+
     def visit_UnaryOp(self, node):
         self.visit(node.expr)
 
@@ -524,6 +547,9 @@ class Interpreter(NodeVisitor):
         self.visit(node.compound_statement)
 
     def visit_VarDecl(self, node):
+        pass
+
+    def visit_ProcedureDecl(self, node):
         pass
 
     def visit_Type(self, node):
