@@ -325,10 +325,9 @@ class Parser(object):
         node = Block(declaration_nodes, compound_statement_node)
         return node
 
-
     def declarations(self):
         declarations = []
-        if self.current_token.type == VAR:
+        while self.current_token.type == VAR:
             self.eat(VAR)
             while self.current_token.type == ID:
                 var_decl = self.variable_declaration()
@@ -441,7 +440,10 @@ class BuiltinTypeSymbol(Symbol):
     def __str__(self):
         return self.name
 
-    __repr__ = __str__
+    def __repr__(self):
+        return "<{class_name}(name='{name}')>".format(
+            class_name=self.__class__.__name__, name=self.name
+        )
 
 
 class VarSymbol(Symbol):
@@ -449,7 +451,9 @@ class VarSymbol(Symbol):
         super().__init__(name, type)
 
     def __str__(self):
-        return "<{name}:{type}>".format(name=self.name, type=self.type)
+        return "<{class_name}(name='{name}', type='{type}')>".format(
+            class_name=self.__class__.__name__, name=self.name, type=self.type
+        )
 
     __repr__ = __str__
 
@@ -460,8 +464,8 @@ class SymbolTable(object):
         self._init_builtins()
 
     def _init_builtins(self):
-        self.define(BuiltinTypeSymbol("INTEGER"))
-        self.define(BuiltinTypeSymbol("REAL"))
+        self.insert(BuiltinTypeSymbol("INTEGER"))
+        self.insert(BuiltinTypeSymbol("REAL"))
 
     def __str__(self):
         s = "Symbols: {symbols}".format(symbols=[value for value in self._symbols.values()])
@@ -469,8 +473,8 @@ class SymbolTable(object):
 
     __repr__ = __str__
 
-    def define(self, symbol):
-        print("Define: %s" % symbol)
+    def insert(self, symbol):
+        print("Insert: %s" % symbol)
         self._symbols[symbol.name] = symbol
 
     def lookup(self, name):
@@ -479,7 +483,7 @@ class SymbolTable(object):
         return symbol
 
 
-class SymbolTableBuilder(NodeVisitor):
+class SemanticAnalyzer(NodeVisitor):
     def __init__(self):
         self.symtab = SymbolTable()
 
@@ -496,7 +500,9 @@ class SymbolTableBuilder(NodeVisitor):
         type_symbol = self.symtab.lookup(type_name)
         var_name = node.var_node.value
         var_symbol = VarSymbol(var_name, type_symbol)
-        self.symtab.define(var_symbol)
+        if self.symtab.lookup(var_name) is not None:
+            raise Exception("Error: Duplicate identifier '%s' found" % var_name)
+        self.symtab.insert(var_symbol)
 
     def visit_ProcedureDecl(self, node):
         pass
@@ -521,12 +527,13 @@ class SymbolTableBuilder(NodeVisitor):
         if var_symbol is None:
             raise NameError(repr(var_name))
         self.visit(node.right)
+        self.visit(node.left)
 
     def visit_Var(self, node):
         var_name = node.value
         var_symbol = self.symtab.lookup(var_name)
         if var_symbol is None:
-            raise NameError(repr(var_name))
+            raise Exception("Error: Symbol(identifier) not found '%s'" % var_name)
 
     def visit_NoOp(self, node):
         pass
@@ -615,7 +622,7 @@ def main():
         lexer = Lexer(text)
         parser = Parser(lexer)
         tree = parser.parse()
-        symtab_builder = SymbolTableBuilder()
+        symtab_builder = SemanticAnalyzer()
         symtab_builder.visit(tree)
         print('Symbol Table contents:')
         print(symtab_builder.symtab)
