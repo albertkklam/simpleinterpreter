@@ -715,8 +715,8 @@ def main():
         tree = parser.parse()
         semantic_analyzer = SemanticAnalyzer()
         semantic_analyzer.visit(tree)
-        # print("Symbol Table contents:")
-        # print(semantic_analyzer.current_scope)
+        print("Symbol Table contents:")
+        print(semantic_analyzer.current_scope)
 
         interpreter = Interpreter(tree)
         interpreter.interpret()
