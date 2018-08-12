@@ -176,9 +176,9 @@ class AST(object):
 
 
 class Program(AST):
-    def __init__(self, name, block):
-        self.name = name
-        self.block = block
+    def __init__(self, program_name, block_node):
+        self.program_name = program_name
+        self.block_node = block_node
 
 
 class Block(AST):
@@ -468,9 +468,21 @@ class Symbol(object):
         self.type = type
 
 
+class ProgramSymbol(Symbol):
+    def __init__(self, name):
+        super().__init__(name)
+
+    def __str__(self):
+        return '<{class_name}(name={name})>'.format(
+            class_name=self.__class__.__name__, name=self.name
+        )
+
+    __repr__ = __str__
+
+
 class ProcedureSymbol(Symbol):
     def __init__(self, name, params=None):
-        super(ProcedureSymbol, self).__init__(name)
+        super().__init__(name)
         self.params = params if params is not None else []
 
     def __str__(self):
@@ -489,7 +501,7 @@ class BuiltinTypeSymbol(Symbol):
         return self.name
 
     def __repr__(self):
-        return "<{class_name}(name='{name}')>".format(
+        return "<{class_name}(name={name})>".format(
             class_name=self.__class__.__name__, name=self.name
         )
 
@@ -552,14 +564,17 @@ class ScopedSymbolTable(object):
 
 class SemanticAnalyzer(NodeVisitor):
     def __init__(self):
-        self.current_scope = None
+        self.current_scope = ScopedSymbolTable(scope_name="builtins", scope_level=0)
+        self.current_scope._init_builtins()
 
     def visit_Program(self, node):
+        program_name = node.program_name
+        program_symbol = ProgramSymbol(program_name)
+        self.current_scope.insert(program_symbol)
         print("ENTER scope: global")
         global_scope = ScopedSymbolTable(scope_name="global", scope_level=1, enclosing_scope=self.current_scope)
-        global_scope._init_builtins()
         self.current_scope = global_scope
-        self.visit(node.block)
+        self.visit(node.block_node)
         print(global_scope)
         self.current_scope = self.current_scope.enclosing_scope
         print("LEAVE scope: global")
@@ -637,7 +652,7 @@ class Interpreter(NodeVisitor):
         self.GLOBAL_MEMORY = OrderedDict()
 
     def visit_Program(self, node):
-        self.visit(node.block)
+        self.visit(node.block_node)
 
     def visit_Block(self, node):
         for declaration in node.declarations:
