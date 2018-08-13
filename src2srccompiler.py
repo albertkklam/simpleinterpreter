@@ -2,8 +2,9 @@ from spi import Lexer, Parser, NodeVisitor, BuiltinTypeSymbol, VarSymbol, Proced
 
 class SourceToSourceCompiler(NodeVisitor):
     def __init__(self):
-        self.current_scope = None
+        self.current_scope = ScopedSymbolTable(scope_name="builtins", scope_level=0)
         self.output = None
+        self.current_scope._init_builtins()
 
     def visit_Block(self, node):
         results = []
@@ -22,7 +23,6 @@ class SourceToSourceCompiler(NodeVisitor):
         result_str = "program %s0;\n" % program_name
 
         global_scope = ScopedSymbolTable(scope_name="global", scope_level=1, enclosing_scope=self.current_scope)
-        global_scope._init_builtins()
         self.current_scope = global_scope
 
         result_str += self.visit(node.block_node)
@@ -66,7 +66,7 @@ class SourceToSourceCompiler(NodeVisitor):
             self.current_scope.insert(var_symbol)
             proc_symbol.params.append(var_symbol)
             scope_level = str(self.current_scope.scope_level)
-            formal_params.append("%s : %s" % (param_name + scope_level, param_type.name))
+            formal_params.append("%s : %s0" % (param_name + scope_level,param_type.name))
         result_str += "; ".join(formal_params)
         if node.params:
             result_str += ")"
@@ -88,7 +88,7 @@ class SourceToSourceCompiler(NodeVisitor):
 
         self.current_scope.insert(var_symbol)
         scope_level = str(self.current_scope.scope_level)
-        return "   var %s : %s;" % (var_name + scope_level , type_name)
+        return "   var %s : %s0;" % (var_name + scope_level, type_name)
 
     def visit_Assign(self, node):
         t2 = self.visit(node.right)
@@ -101,7 +101,7 @@ class SourceToSourceCompiler(NodeVisitor):
         if var_symbol is None:
             raise Exception("Error: Symbol(identifier) not found '%s'" % var_name)
         scope_level = str(self.current_scope.scope_level)
-        return "<%s:%s>" % (var_name + scope_level, var_symbol.type.name)
+        return "<%s:%s0>" % (var_name + scope_level, var_symbol.type.name)
 
 
 if __name__ == "__main__":

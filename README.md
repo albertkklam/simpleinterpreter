@@ -42,5 +42,5 @@ Follow along on what's happening:
 
 ### Part 14
 - [x] You’ve seen in the pictures throughout the article that the Main name in a program statement had subscript zero. I also mentioned that the program’s name is not in the global scope and it’s in some other outer scope that has level zero. Extend spi.py and create a builtins scope, a new scope at level 0, and move the built-in types INTEGER and REAL into that scope. For fun and practice, you can also update the code to put the program name into that scope as well
-- [ ] Modify the source-to-source compiler to add subscripts to the built-in types INTEGER and REAL
+- [x] Modify the source-to-source compiler to add subscripts to the built-in types INTEGER and REAL
 - [x] Run the interpreter with the part10.pas file as an input. Spot the problems and add the missing methods to the semantic analyzer
