@@ -88,7 +88,7 @@ class SourceToSourceCompiler(NodeVisitor):
 
         self.current_scope.insert(var_symbol)
         scope_level = str(self.current_scope.scope_level)
-        return '   var %s : %s;' % (var_name + scope_level , type_name)
+        return "   var %s : %s;" % (var_name + scope_level , type_name)
 
     def visit_Assign(self, node):
         t2 = self.visit(node.right)
