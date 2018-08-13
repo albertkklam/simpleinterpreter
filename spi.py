@@ -534,8 +534,7 @@ class ScopedSymbolTable(object):
         lines = ["\n", h1, "=" * len(h1)]
         for header_name, header_value in (
                 ("Scope name", self.scope_name), ("Scope level", self.scope_level), ("Enclosing scope",
-             self.enclosing_scope.scope_name if self.enclosing_scope else None
-            )
+             self.enclosing_scope.scope_name if self.enclosing_scope else None)
         ):
             lines.append("%-15s: %s" % (header_name, header_value))
         h2 = "Scope (Scoped symbol table) contents"
