@@ -56,7 +56,7 @@ class Lexer(object):
             self.current_char = self.text[self.pos]
 
     def skip_whitespace(self):
-        if self.current_char is not None and self.current_char.isspace():
+        while self.current_char is not None and self.current_char.isspace():
             self.advance()
 
     def skip_comment(self):
@@ -66,24 +66,18 @@ class Lexer(object):
 
     def number(self):
         digit_string = ""
-
         while self.current_char is not None and self.current_char.isdigit():
             digit_string += self.current_char
             self.advance()
-
         if self.current_char == '.':
             digit_string += self.current_char
             self.advance()
-
             while self.current_char is not None and self.current_char.isdigit():
                 digit_string += self.current_char
                 self.advance()
-
             token = Token(REAL_CONST, float(digit_string))
-
         else:
             token = Token(INTEGER_CONST, int(digit_string))
-
         return token
 
     def _id(self):
@@ -106,7 +100,6 @@ class Lexer(object):
                 continue
 
             if self.current_char == '{':
-                self.advance()
                 self.skip_comment()
                 continue
 

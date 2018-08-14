@@ -1,3 +1,4 @@
+import scala.collection.mutable
 import scala.util.Try
 import scala.collection.mutable.StringBuilder
 
@@ -69,6 +70,12 @@ class Lexer(val text: String) {
     }
   }
 
+  def skip_whitespace(): Unit = {
+    while (current_char == " ") {
+      advance()
+    }
+  }
+
   def skip_comment(): Unit = {
     while (current_char != "}") {
       advance()
@@ -77,7 +84,7 @@ class Lexer(val text: String) {
   }
 
   def number(): Token = {
-    val digit_string = new StringBuilder
+    val digit_string = new mutable.StringBuilder()
     while (current_char != "" && Try(current_char.toInt).isSuccess) {
       digit_string.append(current_char)
       advance()
@@ -91,15 +98,30 @@ class Lexer(val text: String) {
         advance()
       }
 
-      Token(real_const, digit_string.toString)
+      Token(integer, digit_string.toString)
     }
     else {
-      Token(integer_const, digit_string.toString)
+      Token(integer, digit_string.toString)
     }
   }
 
+  def _id(): Token = {
+    val id_string = new mutable.StringBuilder()
+    if (current_char == "_") {
+      id_string.append("_")
+      advance()
+    }
+    while (current_char.matches("^[a-zA-Z0-9]$")) {
+      id_string.append(current_char)
+      advance()
+    }
+    reserved_keywords.getOrElse(id_string.toString.toUpperCase, Token(id, id_string.toString.toLowerCase))
+  }
+
   def get_next_token(): Token = {
-    while (current_char == " ") advance()
+    if (current_char == " ") skip_whitespace()
+
+    if (current_char == "{") skip_comment()
 
     if (Try(current_char.toInt).isSuccess) {
       number()
@@ -192,6 +214,3 @@ class Interpreter(val lexer: Lexer) {
     result
   }
 }
-
-val lexer = new Lexer("(10+12 - 2*3)*3")
-val result = new Interpreter(lexer).expr()
