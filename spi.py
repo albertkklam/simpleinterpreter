@@ -22,7 +22,7 @@ class Token(object):
 
 RESERVED_KEYWORDS = {
     "PROGRAM": Token(PROGRAM, "PROGRAM"),
-    "PROCEDURE": Token("PROCEDURE", "PROCEDURE"),
+    "PROCEDURE": Token(PROCEDURE, "PROCEDURE"),
     "VAR": Token(VAR, "VAR"),
     "INTEGER": Token(INTEGER, "INTEGER"),
     "REAL": Token(REAL, "REAL"),
