@@ -1,6 +1,5 @@
 import scala.collection.mutable
 import scala.util.Try
-import scala.collection.mutable.StringBuilder
 
 val integer_const = "INTEGER_CONST"
 val real_const = "REAL_CONST"
@@ -98,10 +97,10 @@ class Lexer(val text: String) {
         advance()
       }
 
-      Token(integer, digit_string.toString)
+      Token(real_const, digit_string.toString)
     }
     else {
-      Token(integer, digit_string.toString)
+      Token(integer_const, digit_string.toString)
     }
   }
 
@@ -123,9 +122,8 @@ class Lexer(val text: String) {
 
     if (current_char == "{") skip_comment()
 
-    if (Try(current_char.toInt).isSuccess) {
-      number()
-    }
+    if (Try(current_char.toInt).isSuccess) number()
+
     else if (current_char == "+") {
       advance()
       Token(plus, "+")
@@ -154,7 +152,7 @@ class Lexer(val text: String) {
   }
 }
 
-class Interpreter(val lexer: Lexer) {
+class Parser(val lexer: Lexer) {
   var current_token: Token = lexer.get_next_token()
 
   def error(): Unit = {
@@ -168,7 +166,7 @@ class Interpreter(val lexer: Lexer) {
     else error()
   }
 
-  def factor(): Int = {
+  def factor(): Double = {
     val token = current_token
     if (token.tokenType == lparen) {
       eat(lparen)
@@ -176,13 +174,17 @@ class Interpreter(val lexer: Lexer) {
       eat(rparen)
       result
     }
+    else if (token.tokenType == integer_const) {
+      eat(integer_const)
+      token.tokenValue.toDouble
+    }
     else {
-      eat(integer)
-      token.tokenValue.toInt
+      eat(real_const)
+      token.tokenValue.toDouble
     }
   }
 
-  def term(): Int = {
+  def term(): Double = {
     var result = factor()
     while (current_token.tokenType == multiply | current_token.tokenType == div) {
       val token = current_token
@@ -198,7 +200,7 @@ class Interpreter(val lexer: Lexer) {
     result
   }
 
-  def expr(): Int = {
+  def expr(): Double = {
     var result = term()
     while (current_token.tokenType == plus | current_token.tokenType == minus) {
       val token = current_token

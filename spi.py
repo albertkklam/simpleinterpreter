@@ -143,13 +143,8 @@ class Lexer(object):
                 return Token(MULTIPLY, "*")
 
             if self.current_char == "/":
-                if self.peek() == "/":
-                    self.advance()
-                    self.advance()
-                    return Token(INTEGER_DIV, "//")
-                else:
-                    self.advance()
-                    return Token(FLOAT_DIV, "/")
+                self.advance()
+                return Token(FLOAT_DIV, "/")
 
             if self.current_char == "(":
                 self.advance()
