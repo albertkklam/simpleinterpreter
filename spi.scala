@@ -118,7 +118,7 @@ class Lexer(val text: String) {
 
     if (current_char == "{") {
       skip_comment()
-      get_next_token()
+      skip_whitespace()
     }
 
     if (Try(current_char.toInt).isSuccess) number()
@@ -162,6 +162,7 @@ class Parser(val lexer: Lexer) {
   def eat(token_type: String): Unit = {
     if (current_token.tokenType == token_type) {
       current_token = lexer.get_next_token()
+      println(current_token.tokenValue)
     }
     else error()
   }
