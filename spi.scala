@@ -70,15 +70,11 @@ class Lexer(val text: String) {
   }
 
   def skip_whitespace(): Unit = {
-    while (current_char == " ") {
-      advance()
-    }
+    while (current_char == " ") advance()
   }
 
   def skip_comment(): Unit = {
-    while (current_char != "}") {
-      advance()
-    }
+    while (current_char != "}") advance()
     advance()
   }
 
@@ -120,7 +116,10 @@ class Lexer(val text: String) {
   def get_next_token(): Token = {
     if (current_char == " ") skip_whitespace()
 
-    if (current_char == "{") skip_comment()
+    if (current_char == "{") {
+      skip_comment()
+      get_next_token()
+    }
 
     if (Try(current_char.toInt).isSuccess) number()
 
@@ -151,6 +150,7 @@ class Lexer(val text: String) {
     else Token(eof, "")
   }
 }
+
 
 class Parser(val lexer: Lexer) {
   var current_token: Token = lexer.get_next_token()
