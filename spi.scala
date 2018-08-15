@@ -162,7 +162,6 @@ class Parser(val lexer: Lexer) {
   def eat(token_type: String): Unit = {
     if (current_token.tokenType == token_type) {
       current_token = lexer.get_next_token()
-      println(current_token.tokenValue)
     }
     else error()
   }
@@ -187,7 +186,7 @@ class Parser(val lexer: Lexer) {
 
   def term(): Double = {
     var result = factor()
-    while (current_token.tokenType == multiply | current_token.tokenType == div) {
+    while (current_token.tokenType == multiply || current_token.tokenType == div) {
       val token = current_token
       if (token.tokenType == multiply) {
         eat(multiply)
@@ -203,7 +202,7 @@ class Parser(val lexer: Lexer) {
 
   def expr(): Double = {
     var result = term()
-    while (current_token.tokenType == plus | current_token.tokenType == minus) {
+    while (current_token.tokenType == plus || current_token.tokenType == minus) {
       val token = current_token
       if (token.tokenType == plus) {
         eat(plus)
