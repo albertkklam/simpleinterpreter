@@ -106,7 +106,7 @@ class Lexer(val text: String) {
       id_string.append("_")
       advance()
     }
-    while (current_char.matches("^[a-zA-Z0-9]$")) {
+    while (current_char.matches("[a-zA-Z0-9]")) {
       id_string.append(current_char)
       advance()
     }
@@ -121,8 +121,8 @@ class Lexer(val text: String) {
       skip_whitespace()
     }
 
-    if (Try(current_char.toInt).isSuccess) number()
-
+    if (current_char.matches("[a-zA-Z]")) _id()
+    else if (Try(current_char.toInt).isSuccess) number()
     else if (current_char == "+") {
       advance()
       Token(plus, "+")
@@ -155,9 +155,7 @@ class Lexer(val text: String) {
 class Parser(val lexer: Lexer) {
   var current_token: Token = lexer.get_next_token()
 
-  def error(): Unit = {
-    throw new Exception("Invalid syntax")
-  }
+  def error(): Unit = throw new Exception("Invalid syntax")
 
   def eat(token_type: String): Unit = {
     if (current_token.tokenType == token_type) {
