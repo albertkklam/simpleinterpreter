@@ -123,6 +123,17 @@ class Lexer(val text: String) {
 
     if (current_char.matches("[a-zA-Z]")) _id()
     else if (Try(current_char.toInt).isSuccess) number()
+    else if (current_char == ":") {
+      if (peek() == "=") {
+        advance()
+        advance()
+        Token(assign, ":=")
+      }
+      else {
+        advance()
+        Token(colon, ":")
+      }
+    }
     else if (current_char == "+") {
       advance()
       Token(plus, "+")
