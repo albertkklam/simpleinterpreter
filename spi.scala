@@ -162,6 +162,15 @@ class Lexer(val text: String) {
   }
 }
 
+trait AST
+
+class VarDecl (val var_node: Var, val type_node: Type) extends AST
+class Var (val token: Token) extends AST {
+  val value = token.tokenValue
+}
+class Type(val token: Token) extends AST {
+  val value = token.tokenValue
+}
 
 class Parser(val lexer: Lexer) {
   var current_token: Token = lexer.get_next_token()
