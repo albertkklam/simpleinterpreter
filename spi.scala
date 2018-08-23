@@ -171,6 +171,12 @@ class Var (val token: Token) extends AST {
 class Type(val token: Token) extends AST {
   val value = token.tokenValue
 }
+class UnaryOp(val token: Token, val expr: Double) extends AST
+class BinOp(val left: Double, val token: Token, val right: Double) extends AST
+class Num(val token: Token) extends AST {
+  val value = token.tokenValue
+}
+class NoOp extends AST
 
 class Parser(val lexer: Lexer) {
   var current_token: Token = lexer.get_next_token()
