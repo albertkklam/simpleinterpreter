@@ -171,8 +171,8 @@ class Var (val token: Token) extends AST {
 class Type(val token: Token) extends AST {
   val value = token.tokenValue
 }
-class UnaryOp(val token: Token, val expr: Double) extends AST
-class BinOp(val left: Double, val token: Token, val right: Double) extends AST
+class UnaryOp(val token: Token, val expr: AST) extends AST
+class BinOp(val left: AST, val token: Token, val right: AST) extends AST
 class Num(val token: Token) extends AST {
   val value = token.tokenValue
 }
@@ -190,53 +190,69 @@ class Parser(val lexer: Lexer) {
     else error()
   }
 
-  def factor(): Double = {
+  def factor(): AST = {
     val token = current_token
-    if (token.tokenType == lparen) {
-      eat(lparen)
-      val result = expr()
-      eat(rparen)
-      result
+    if (token.tokenType == plus) {
+      eat(plus)
+      new UnaryOp(token, factor())
+    }
+    else if (token.tokenType == minus) {
+      eat(minus)
+      new UnaryOp(token, factor())
     }
     else if (token.tokenType == integer_const) {
       eat(integer_const)
-      token.tokenValue.toDouble
+      new Num(token)
+    }
+    else if (token.tokenType == real_const) {
+      eat(real_const)
+      new Num(token)
+    }
+    else if (token.tokenType == lparen) {
+      eat(lparen)
+      val node = expr()
+      eat(rparen)
+      node
     }
     else {
-      eat(real_const)
-      token.tokenValue.toDouble
+      variable()
     }
   }
 
-  def term(): Double = {
-    var result = factor()
+  def term(): AST = {
+    var node = factor()
     while (current_token.tokenType == multiply || current_token.tokenType == div) {
       val token = current_token
       if (token.tokenType == multiply) {
         eat(multiply)
-        result *= factor()
       }
       else {
         eat(div)
-        result /= factor()
       }
+      node = new BinOp(node, token, factor())
     }
-    result
+    node
   }
 
-  def expr(): Double = {
-    var result = term()
+  def expr(): AST = {
+    var node = term()
     while (current_token.tokenType == plus || current_token.tokenType == minus) {
       val token = current_token
       if (token.tokenType == plus) {
         eat(plus)
-        result += term()
       }
       else {
         eat(minus)
-        result -= term
       }
+      node = new BinOp(node, token, term())
     }
-    result
+    node
   }
+
+  def variable(): AST = {
+    var node = new Var(current_token)
+    eat(id)
+    node
+  }
+
 }
