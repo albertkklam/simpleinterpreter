@@ -229,7 +229,7 @@ class Parser(val lexer: Lexer) {
       else {
         eat(div)
       }
-      node = new BinOp(node, token, factor())
+      node = new BinOp(left=node, token=token, right=factor())
     }
     node
   }
@@ -244,15 +244,21 @@ class Parser(val lexer: Lexer) {
       else {
         eat(minus)
       }
-      node = new BinOp(node, token, term())
+      node = new BinOp(left=node, token=token, right=term())
     }
     node
   }
 
   def variable(): AST = {
-    var node = new Var(current_token)
+    val node = new Var(current_token)
     eat(id)
     node
   }
+}
 
+class NodeVisitor
+
+trait Symbol {
+  def name: String
+  def symbolType: Option[String]
 }
