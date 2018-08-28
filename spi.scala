@@ -262,3 +262,13 @@ trait Symbol {
   def name: String
   def symbolType: Option[String]
 }
+
+class BuiltinTypeSymbol(val builtinTypeSymbolName: String) extends Symbol {
+  def name = builtinTypeSymbolName
+  def symbolType = None
+}
+
+class VarSymbol(val variableName: String, val variableType: String) extends Symbol {
+  def name = variableName
+  def symbolType = Option(variableType)
+}
