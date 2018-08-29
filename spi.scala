@@ -256,7 +256,11 @@ class Parser(val lexer: Lexer) {
   }
 }
 
-class NodeVisitor
+class NodeVisitor {
+  def visit(node: AST): Unit = {
+    val method_name: String = "visit_" + node.getClass().getName()
+  }
+}
 
 trait Symbol {
   def name: String
@@ -272,3 +276,5 @@ class VarSymbol(val variableName: String, val variableType: String) extends Symb
   def name = variableName
   def symbolType = Option(variableType)
 }
+
+class SemanticAnalyzer extends NodeVisitor
