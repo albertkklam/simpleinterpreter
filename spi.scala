@@ -258,7 +258,8 @@ class Parser(val lexer: Lexer) {
 
 class NodeVisitor {
   def visit(node: AST): Unit = {
-    val method_name: String = "visit_" + node.getClass().getName()
+    val method_name: String = "visit_" + node.getClass.getName
+    val visitor = this.getClass.getMethod(method_name)
   }
 }
 
