@@ -286,3 +286,7 @@ class SemanticAnalyzer extends NodeVisitor {
     val varName = node.var_node.value
   }
 }
+
+class Interpreter extends NodeVisitor {
+  def visit_VarDecl {}
+}
