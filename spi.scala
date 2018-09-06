@@ -280,13 +280,19 @@ class VarSymbol(val variableName: String, val variableType: String) extends Symb
 
 class ScopedSymbolTable
 
-class SemanticAnalyzer extends NodeVisitor {
+class SemanticAnalyzer {
+  val nodeVisitor = new NodeVisitor
   def visit_VarDecl(node: VarDecl): Unit =  {
     val typeName = node.type_node.value
     val varName = node.var_node.value
   }
+  def visit_BinOp(node: BinOp): Unit = {
+    nodeVisitor.visit(node.left)
+    nodeVisitor.visit(node.right)
+  }
 }
 
-class Interpreter extends NodeVisitor {
+class Interpreter {
+  val nodeVisitor = new NodeVisitor
   def visit_VarDecl {}
 }
